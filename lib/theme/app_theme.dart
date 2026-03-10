@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 class AppTheme {
   static const Color goldColor = Color(0xFFD4AF37);
   static const Color darkBackground = Color(0xFF121212);
+  static const Color cardDark = Color(0xFF1A1A1A);
 
   static ThemeData get lightTheme => ThemeData(
     fontFamily: 'Cairo',

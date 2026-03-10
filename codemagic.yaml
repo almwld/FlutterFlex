@@ -8,22 +8,40 @@ workflows:
     scripts:
       - name: Create Flutter project structure
         script: |
-          # حفظ الكود
           mkdir -p /tmp/my_code
           cp -r lib /tmp/my_code/
           cp pubspec.yaml /tmp/my_code/
-          cp -r assets /tmp/my_code/ 2>/dev/null || true
           
-          # إنشاء مشروع جديد
           cd /tmp
           flutter create flex_yemen_new --org com.flexyemen
           
-          # نقل الكود
           cp -r /tmp/my_code/lib/* /tmp/flex_yemen_new/lib/
-          cp /tmp/my_code/pubspec.yaml /tmp/flex_yemen_new/
-          cp -r /tmp/my_code/assets /tmp/flex_yemen_new/ 2>/dev/null || true
           
-          # استبدال المشروع
+          # تعديل pubspec.yaml لإزالة الأصول المفقودة
+          cat > /tmp/flex_yemen_new/pubspec.yaml << 'PUBSPEC'
+name: flex_yemen
+description: تطبيق فلكس يمن
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  flutter_svg: ^2.0.10+1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+PUBSPEC
+          
           rm -rf $CM_BUILD_DIR/*
           cp -r /tmp/flex_yemen_new/* $CM_BUILD_DIR/
       

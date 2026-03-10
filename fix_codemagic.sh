@@ -1,0 +1,88 @@
+#!/bin/bash
+
+cd ~/FlexFlutter
+
+echo "🔧 إصلاح ترتيب النسخ..."
+
+cat > codemagic.yaml << 'EOF'
+workflows:
+  flex-yemen-android:
+    name: Flex Yemen Android
+    instance_type: mac_mini_m1
+    max_build_duration: 30
+    environment:
+      flutter: stable
+    scripts:
+      - name: Create Flutter project structure
+        script: |
+          mkdir -p /tmp/my_code
+          cp -r lib /tmp/my_code/
+          cp pubspec.yaml /tmp/my_code/
+          
+          cd /tmp
+          flutter create flex_yemen_new --org com.flexyemen
+          
+          # إنشاء app_theme.dart أولاً
+          mkdir -p /tmp/flex_yemen_new/lib/theme
+          printf '%s\n' \
+            "import 'package:flutter/material.dart';" \
+            "import 'package:flutter/services.dart';" \
+            "" \
+            "class AppTheme {" \
+            "  static const Color goldColor = Color(0xFFD4AF37);" \
+            "  static const Color darkBackground = Color(0xFF121212);" \
+            "  static const Color cardDark = Color(0xFF1A1A1A);" \
+            "" \
+            "  static ThemeData get lightTheme => ThemeData(" \
+            "    fontFamily: 'Cairo'," \
+            "    brightness: Brightness.light," \
+            "    primaryColor: goldColor," \
+            "    scaffoldBackgroundColor: Colors.white," \
+            "    useMaterial3: true," \
+            "    appBarTheme: const AppBarTheme(" \
+            "      elevation: 0," \
+            "      backgroundColor: Colors.transparent," \
+            "      systemOverlayStyle: SystemUiOverlayStyle.dark," \
+            "    )," \
+            "  );" \
+            "" \
+            "  static ThemeData get darkTheme => ThemeData(" \
+            "    fontFamily: 'Cairo'," \
+            "    brightness: Brightness.dark," \
+            "    primaryColor: goldColor," \
+            "    scaffoldBackgroundColor: darkBackground," \
+            "    useMaterial3: true," \
+            "    appBarTheme: const AppBarTheme(" \
+            "      elevation: 0," \
+            "      backgroundColor: Colors.transparent," \
+            "      systemOverlayStyle: SystemUiOverlayStyle.light," \
+            "    )," \
+            "  );" \
+            "}" > /tmp/flex_yemen_new/lib/theme/app_theme.dart
+          
+          # نسخ الباقي
+          cp -r /tmp/my_code/lib/navigation /tmp/flex_yemen_new/lib/ 2>/dev/null || true
+          cp -r /tmp/my_code/lib/screens /tmp/flex_yemen_new/lib/ 2>/dev/null || true
+          cp -r /tmp/my_code/lib/widgets /tmp/flex_yemen_new/lib/ 2>/dev/null || true
+          cp /tmp/my_code/pubspec.yaml /tmp/flex_yemen_new/
+          
+          rm -rf $CM_BUILD_DIR/*
+          cp -r /tmp/flex_yemen_new/* $CM_BUILD_DIR/
+      
+      - name: Get dependencies
+        script: flutter pub get
+      
+      - name: Build APK
+        script: flutter build apk --release
+    
+    artifacts:
+      - build/**/outputs/**/*.apk
+EOF
+
+git add codemagic.yaml
+git commit -m "🔧 Fix: Create app_theme.dart first, then copy rest"
+git push origin main
+
+echo "✅ تم!"
+echo "⏳ انتظر البناء..."
+
